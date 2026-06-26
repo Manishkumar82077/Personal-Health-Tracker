@@ -2,7 +2,8 @@
 import { createContext, useEffect, useState, ReactNode } from 'react';
 import {
   User, onAuthStateChanged,
-  signInWithEmailAndPassword, signOut as firebaseSignOut,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
   GoogleAuthProvider, signInWithPopup,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -15,6 +16,7 @@ interface AuthContextValue {
   mockMode: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   getToken: () => Promise<string | null>;
@@ -52,6 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithEmailAndPassword(auth, email, password);
   };
 
+  const signUp = async (email: string, password: string) => {
+    await createUserWithEmailAndPassword(auth, email, password);
+  };
+
   const signInWithGoogle = async () => {
     await signInWithPopup(auth, new GoogleAuthProvider());
   };
@@ -62,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, mockMode: USE_MOCK, loading, signIn, signInWithGoogle, signOut, getToken }}>
+    <AuthContext.Provider value={{ user, mockMode: USE_MOCK, loading, signIn, signUp, signInWithGoogle, signOut, getToken }}>
       {children}
     </AuthContext.Provider>
   );

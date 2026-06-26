@@ -2,17 +2,18 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LuUser, LuLogOut, LuCircleAlert } from 'react-icons/lu';
+import { LuUser, LuCircleAlert } from 'react-icons/lu';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 
-export default function LoginPage() {
-  const { user, mockMode, loading, signIn, signInWithGoogle } = useAuth();
+export default function SignupPage() {
+  const { user, mockMode, loading, signUp, signInWithGoogle } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -20,15 +21,23 @@ export default function LoginPage() {
     if (!loading && (user || mockMode)) router.replace('/');
   }, [user, mockMode, loading, router]);
 
-  const handleEmail = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (password !== confirm) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
     setBusy(true);
     try {
-      await signIn(email, password);
+      await signUp(email, password);
       router.replace('/');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Sign in failed');
+      setError(err instanceof Error ? err.message : 'Sign up failed');
     } finally {
       setBusy(false);
     }
@@ -41,7 +50,7 @@ export default function LoginPage() {
       await signInWithGoogle();
       router.replace('/');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Google sign in failed');
+      setError(err instanceof Error ? err.message : 'Google sign up failed');
     } finally {
       setBusy(false);
     }
@@ -63,31 +72,28 @@ export default function LoginPage() {
             <LuUser className="w-7 h-7 text-white dark:text-gray-900" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Health Tracker</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to your account</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Create your account</p>
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 space-y-4">
-          {mockMode && (
-            <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs rounded-xl px-3 py-2.5">
-              <LuCircleAlert className="w-3.5 h-3.5 flex-shrink-0" />
-              Mock mode — no real credentials needed
-            </div>
-          )}
-
-          <form onSubmit={handleEmail} className="space-y-3">
+          <form onSubmit={handleSignup} className="space-y-3">
             <Input id="email" label="Email" type="email" placeholder="you@example.com"
               value={email} onChange={e => setEmail(e.target.value)} required />
-            <Input id="password" label="Password" type="password" placeholder="••••••••"
+            <Input id="password" label="Password" type="password" placeholder="Min. 6 characters"
               value={password} onChange={e => setPassword(e.target.value)} required />
+            <Input id="confirm" label="Confirm password" type="password" placeholder="••••••••"
+              value={confirm} onChange={e => setConfirm(e.target.value)} required />
+
             {error && (
               <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                 <LuCircleAlert className="w-3.5 h-3.5 flex-shrink-0" />
                 {error}
               </div>
             )}
+
             <Button type="submit" className="w-full" disabled={busy}>
-              {busy ? <Spinner size="sm" /> : <LuLogOut className="w-4 h-4" />}
-              {busy ? 'Signing in…' : 'Sign in'}
+              {busy ? <Spinner size="sm" /> : null}
+              {busy ? 'Creating account…' : 'Create account'}
             </Button>
           </form>
 
@@ -111,9 +117,9 @@ export default function LoginPage() {
           </Button>
 
           <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-gray-900 dark:text-gray-50 font-medium hover:underline">
-              Create account
+            Already have an account?{' '}
+            <Link href="/login" className="text-gray-900 dark:text-gray-50 font-medium hover:underline">
+              Sign in
             </Link>
           </p>
         </div>
