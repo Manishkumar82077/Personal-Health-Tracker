@@ -4,8 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Spinner } from '@/components/ui/Spinner';
 
-const PUBLIC_PATHS = ['/login'];
-
+const PUBLIC_PATHS = ['/login', '/signup'];
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, mockMode, loading } = useAuth();
   const router = useRouter();
