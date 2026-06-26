@@ -1,0 +1,31 @@
+# Environment variables — never commit credentials
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Firebase
+.firebase/
+.firebaserc
+firebase-debug.log
+
+# Render
+.render-buildpacks.json

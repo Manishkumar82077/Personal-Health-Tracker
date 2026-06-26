@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "source": "backend",
+    "runtime": "nodejs20",
+    "predeploy": ["npm --prefix backend run build"]
+  }
+}
