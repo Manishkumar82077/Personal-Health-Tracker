@@ -1,6 +1,6 @@
 import {
   Dashboard, FoodEntry, FoodItem, FoodItemInput, Meal, WaterLog, Workout,
-  StepsEntry, SleepEntry, Profile, Goals, Post, Comment, PublicProfile, Feed,
+  StepsEntry, SleepEntry, Profile, Goals, Post, PublicProfile, Feed,
 } from './types';
 
 const NOW = new Date().toISOString();
@@ -69,13 +69,10 @@ const MOCK_MEALS: Meal[] = [
 ];
 
 const MOCK_POSTS: Post[] = [
-  { id: 'p1', authorUid: 'mock-user-2', authorName: 'Priya', text: 'Hit my 10k steps goal 7 days in a row! 🎉', likeCount: 4, commentCount: 1, createdAt: new Date(Date.now() - 3600e3).toISOString(), likedByMe: false },
-  { id: 'p2', authorUid: 'mock-user-1', authorName: 'Demo User', text: 'Meal-prepped rice + dal for the week. Protein on point.', likeCount: 2, commentCount: 0, createdAt: new Date(Date.now() - 7200e3).toISOString(), likedByMe: true },
+  { id: 'p1', authorUid: 'mock-user-2', authorName: 'Priya', text: 'Hit my 10k steps goal 7 days in a row! 🎉', reactions: { '🔥': 3, '💪': 1 }, myReaction: null, createdAt: new Date(Date.now() - 7200e3).toISOString() },
+  { id: 'p2', authorUid: 'mock-user-1', authorName: 'Demo User', text: 'Meal-prepped rice + dal for the week. Protein on point.', reactions: { '👍': 2 }, myReaction: '👍', createdAt: new Date(Date.now() - 3600e3).toISOString() },
+  { id: 'p3', authorUid: 'mock-user-3', authorName: 'Arjun', text: 'Nice! Any tips for hitting protein on a veg diet?', reactions: {}, myReaction: null, createdAt: new Date(Date.now() - 1800e3).toISOString(), replyTo: { id: 'p2', authorName: 'Demo User', text: 'Meal-prepped rice + dal for the week. Protein on point.' } },
 ];
-const MOCK_COMMENTS: Record<string, Comment[]> = {
-  p1: [{ id: 'c1', authorUid: 'mock-user-1', authorName: 'Demo User', text: 'Amazing, keep it up!', createdAt: new Date(Date.now() - 1800e3).toISOString() }],
-};
-const MOCK_LIKED = new Set<string>(['p2']);
 
 function calcDashboard(date: string): Dashboard {
   const dayFood = MOCK_FOOD.filter(f => f.date === date);
@@ -262,46 +259,35 @@ export const mockApi = {
     return { entries };
   },
 
-  // Community
+  // Community (chat)
   getFeed: async (_cursor?: string): Promise<Feed> => {
     const posts = structuredClone(MOCK_POSTS)
-      .map(p => ({ ...p, likedByMe: MOCK_LIKED.has(p.id) }))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt)); // oldest→newest
     return { posts, nextCursor: null };
   },
-  createPost: async (text: string): Promise<Post> => {
+  createPost: async (text: string, replyToId?: string): Promise<Post> => {
+    const parent = replyToId ? MOCK_POSTS.find(p => p.id === replyToId) : undefined;
     const post: Post = {
       id: uid(), authorUid: MOCK_PROFILE.uid, authorName: MOCK_PROFILE.displayName ?? 'You',
-      text: text.trim(), likeCount: 0, commentCount: 0,
-      createdAt: new Date().toISOString(), likedByMe: false,
+      text: text.trim(), reactions: {}, myReaction: null,
+      createdAt: new Date().toISOString(),
+      ...(parent ? { replyTo: { id: parent.id, authorName: parent.authorName, text: parent.text.slice(0, 140) } } : {}),
     };
-    MOCK_POSTS.unshift(post);
+    MOCK_POSTS.push(post);
     return structuredClone(post);
   },
   deletePost: async (id: string): Promise<void> => {
     const i = MOCK_POSTS.findIndex(p => p.id === id);
     if (i !== -1) MOCK_POSTS.splice(i, 1);
-    delete MOCK_COMMENTS[id];
   },
-  getComments: async (postId: string): Promise<Comment[]> =>
-    structuredClone(MOCK_COMMENTS[postId] ?? []),
-  addComment: async (postId: string, text: string): Promise<Comment> => {
-    const comment: Comment = {
-      id: uid(), authorUid: MOCK_PROFILE.uid, authorName: MOCK_PROFILE.displayName ?? 'You',
-      text: text.trim(), createdAt: new Date().toISOString(),
-    };
-    (MOCK_COMMENTS[postId] ??= []).push(comment);
-    const post = MOCK_POSTS.find(p => p.id === postId);
-    if (post) post.commentCount += 1;
-    return structuredClone(comment);
-  },
-  toggleLike: async (postId: string): Promise<{ liked: boolean; likeCount: number }> => {
+  reactToPost: async (postId: string, emoji: string): Promise<{ reactions: Record<string, number>; myReaction: string | null }> => {
     const post = MOCK_POSTS.find(p => p.id === postId);
     if (!post) throw new Error('Post not found');
-    const liked = !MOCK_LIKED.has(postId);
-    if (liked) { MOCK_LIKED.add(postId); post.likeCount += 1; }
-    else { MOCK_LIKED.delete(postId); post.likeCount = Math.max(0, post.likeCount - 1); }
-    return { liked, likeCount: post.likeCount };
+    const old = post.myReaction ?? null;
+    const dec = (e: string) => { post.reactions[e] = Math.max(0, (post.reactions[e] ?? 0) - 1); if (post.reactions[e] === 0) delete post.reactions[e]; };
+    if (old === emoji) { dec(emoji); post.myReaction = null; }
+    else { if (old) dec(old); post.reactions[emoji] = (post.reactions[emoji] ?? 0) + 1; post.myReaction = emoji; }
+    return { reactions: structuredClone(post.reactions), myReaction: post.myReaction };
   },
   getPublicProfile: async (uid: string): Promise<PublicProfile> => {
     const posts = structuredClone(MOCK_POSTS)

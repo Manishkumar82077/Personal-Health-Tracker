@@ -1,5 +1,5 @@
 import { mockApi } from './mock';
-import type { Dashboard, FoodEntry, FoodItem, FoodItemInput, Meal, WaterLog, Workout, StepsEntry, SleepEntry, Profile, Goals, Post, Comment, PublicProfile, Feed } from './types';
+import type { Dashboard, FoodEntry, FoodItem, FoodItemInput, Meal, WaterLog, Workout, StepsEntry, SleepEntry, Profile, Goals, Post, PublicProfile, Feed } from './types';
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
@@ -97,19 +97,15 @@ export const getSteps    = (date: string): Promise<StepsEntry> =>
 export const updateSteps = (date: string, count: number): Promise<StepsEntry> =>
   USE_MOCK ? mockApi.updateSteps(date, count) : request(`/steps/${date}`, { method: 'PUT', body: JSON.stringify({ count }) });
 
-// ---- Community ----
+// ---- Community (chat) ----
 export const getFeed = (cursor?: string): Promise<Feed> =>
   USE_MOCK ? mockApi.getFeed(cursor) : request(`/community/posts${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`);
-export const createPost = (text: string): Promise<Post> =>
-  USE_MOCK ? mockApi.createPost(text) : request('/community/posts', { method: 'POST', body: JSON.stringify({ text }) });
+export const createPost = (text: string, replyToId?: string): Promise<Post> =>
+  USE_MOCK ? mockApi.createPost(text, replyToId) : request('/community/posts', { method: 'POST', body: JSON.stringify({ text, replyToId }) });
 export const deletePost = (id: string): Promise<void> =>
   USE_MOCK ? mockApi.deletePost(id) : request(`/community/posts/${id}`, { method: 'DELETE' });
-export const getComments = (postId: string): Promise<Comment[]> =>
-  USE_MOCK ? mockApi.getComments(postId) : request(`/community/posts/${postId}/comments`);
-export const addComment = (postId: string, text: string): Promise<Comment> =>
-  USE_MOCK ? mockApi.addComment(postId, text) : request(`/community/posts/${postId}/comments`, { method: 'POST', body: JSON.stringify({ text }) });
-export const toggleLike = (postId: string): Promise<{ liked: boolean; likeCount: number }> =>
-  USE_MOCK ? mockApi.toggleLike(postId) : request(`/community/posts/${postId}/like`, { method: 'POST' });
+export const reactToPost = (postId: string, emoji: string): Promise<{ reactions: Record<string, number>; myReaction: string | null }> =>
+  USE_MOCK ? mockApi.reactToPost(postId, emoji) : request(`/community/posts/${postId}/react`, { method: 'POST', body: JSON.stringify({ emoji }) });
 export const getPublicProfile = (uid: string): Promise<PublicProfile> =>
   USE_MOCK ? mockApi.getPublicProfile(uid) : request(`/community/profile/${uid}`);
 

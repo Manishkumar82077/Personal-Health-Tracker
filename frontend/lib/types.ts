@@ -143,25 +143,25 @@ export interface Dashboard {
   workouts: Workout[];
 }
 
-// ---- Community ----
+// ---- Community (Telegram-style chat) ----
+export interface ReplyRef {
+  id: string;
+  authorName: string;
+  text: string;
+}
+
 export interface Post {
   id: string;
   authorUid: string;
   authorName: string;
   text: string;
-  likeCount: number;
-  commentCount: number;
   createdAt: string;
-  likedByMe?: boolean;
+  replyTo?: ReplyRef;
+  reactions: Record<string, number>; // emoji -> count
+  myReaction?: string | null;
 }
 
-export interface Comment {
-  id: string;
-  authorUid: string;
-  authorName: string;
-  text: string;
-  createdAt: string;
-}
+export const REACTIONS = ['👍', '❤️', '🔥', '💪', '🎉', '😂'];
 
 export interface PublicProfile {
   uid: string;

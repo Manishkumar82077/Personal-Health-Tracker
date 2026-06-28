@@ -3,7 +3,7 @@ import { useParams } from 'next/navigation';
 import { LuCircleAlert } from 'react-icons/lu';
 import { usePublicProfile } from '@/hooks/useCommunity';
 import { useAuth } from '@/hooks/useAuth';
-import { PostCard } from '@/components/community/PostCard';
+import { ChatMessage } from '@/components/community/ChatMessage';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { PageHeader } from '@/components/PageHeader';
@@ -49,7 +49,7 @@ export default function PublicProfilePage() {
           ) : (
             <div className="space-y-3">
               {profile.posts.map(post => (
-                <PostCard key={post.id} post={post} currentUid={currentUid} onChanged={refresh} />
+                <ChatMessage key={post.id} post={post} currentUid={currentUid} onReply={() => {}} onChanged={refresh} />
               ))}
             </div>
           )}
