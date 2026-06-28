@@ -1,6 +1,6 @@
 import {
   Dashboard, FoodEntry, FoodItem, FoodItemInput, Meal, WaterLog, Workout,
-  StepsEntry, SleepEntry, Profile, Goals,
+  StepsEntry, SleepEntry, Profile, Goals, Post, Comment, PublicProfile, Feed,
 } from './types';
 
 const NOW = new Date().toISOString();
@@ -67,6 +67,15 @@ const MOCK_MEALS: Meal[] = [
     createdAt: NOW, updatedAt: NOW,
   },
 ];
+
+const MOCK_POSTS: Post[] = [
+  { id: 'p1', authorUid: 'mock-user-2', authorName: 'Priya', text: 'Hit my 10k steps goal 7 days in a row! 🎉', likeCount: 4, commentCount: 1, createdAt: new Date(Date.now() - 3600e3).toISOString(), likedByMe: false },
+  { id: 'p2', authorUid: 'mock-user-1', authorName: 'Demo User', text: 'Meal-prepped rice + dal for the week. Protein on point.', likeCount: 2, commentCount: 0, createdAt: new Date(Date.now() - 7200e3).toISOString(), likedByMe: true },
+];
+const MOCK_COMMENTS: Record<string, Comment[]> = {
+  p1: [{ id: 'c1', authorUid: 'mock-user-1', authorName: 'Demo User', text: 'Amazing, keep it up!', createdAt: new Date(Date.now() - 1800e3).toISOString() }],
+};
+const MOCK_LIKED = new Set<string>(['p2']);
 
 function calcDashboard(date: string): Dashboard {
   const dayFood = MOCK_FOOD.filter(f => f.date === date);
@@ -251,6 +260,57 @@ export const mockApi = {
       return entry;
     });
     return { entries };
+  },
+
+  // Community
+  getFeed: async (_cursor?: string): Promise<Feed> => {
+    const posts = structuredClone(MOCK_POSTS)
+      .map(p => ({ ...p, likedByMe: MOCK_LIKED.has(p.id) }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return { posts, nextCursor: null };
+  },
+  createPost: async (text: string): Promise<Post> => {
+    const post: Post = {
+      id: uid(), authorUid: MOCK_PROFILE.uid, authorName: MOCK_PROFILE.displayName ?? 'You',
+      text: text.trim(), likeCount: 0, commentCount: 0,
+      createdAt: new Date().toISOString(), likedByMe: false,
+    };
+    MOCK_POSTS.unshift(post);
+    return structuredClone(post);
+  },
+  deletePost: async (id: string): Promise<void> => {
+    const i = MOCK_POSTS.findIndex(p => p.id === id);
+    if (i !== -1) MOCK_POSTS.splice(i, 1);
+    delete MOCK_COMMENTS[id];
+  },
+  getComments: async (postId: string): Promise<Comment[]> =>
+    structuredClone(MOCK_COMMENTS[postId] ?? []),
+  addComment: async (postId: string, text: string): Promise<Comment> => {
+    const comment: Comment = {
+      id: uid(), authorUid: MOCK_PROFILE.uid, authorName: MOCK_PROFILE.displayName ?? 'You',
+      text: text.trim(), createdAt: new Date().toISOString(),
+    };
+    (MOCK_COMMENTS[postId] ??= []).push(comment);
+    const post = MOCK_POSTS.find(p => p.id === postId);
+    if (post) post.commentCount += 1;
+    return structuredClone(comment);
+  },
+  toggleLike: async (postId: string): Promise<{ liked: boolean; likeCount: number }> => {
+    const post = MOCK_POSTS.find(p => p.id === postId);
+    if (!post) throw new Error('Post not found');
+    const liked = !MOCK_LIKED.has(postId);
+    if (liked) { MOCK_LIKED.add(postId); post.likeCount += 1; }
+    else { MOCK_LIKED.delete(postId); post.likeCount = Math.max(0, post.likeCount - 1); }
+    return { liked, likeCount: post.likeCount };
+  },
+  getPublicProfile: async (uid: string): Promise<PublicProfile> => {
+    const posts = structuredClone(MOCK_POSTS)
+      .filter(p => p.authorUid === uid)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const name = uid === MOCK_PROFILE.uid
+      ? (MOCK_PROFILE.displayName ?? 'You')
+      : (posts[0]?.authorName ?? 'User');
+    return { uid, displayName: name, joinedAt: NOW, posts };
   },
 
   // Water

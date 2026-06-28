@@ -8,6 +8,7 @@ import workoutRouter from './workout.routes';
 import stepsRouter from './steps.routes';
 import sleepRouter from './sleep.routes';
 import dashboardRouter from './dashboard.routes';
+import communityRouter from './community.routes';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/workouts', workoutRouter);
 router.use('/steps', stepsRouter);
 router.use('/sleep', sleepRouter);
 router.use('/dashboard', dashboardRouter);
+router.use('/community', communityRouter);
 
 export default router;

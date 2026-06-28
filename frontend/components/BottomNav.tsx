@@ -1,15 +1,16 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LuHouse, LuUtensils, LuDroplets, LuDumbbell, LuActivity, LuMoon } from 'react-icons/lu';
+import { LuHouse, LuUtensils, LuDroplets, LuDumbbell, LuActivity, LuMoon, LuUsers } from 'react-icons/lu';
 
 const NAV = [
-  { href: '/dashboard', Icon: LuHouse,    label: 'Home'    },
-  { href: '/food',     Icon: LuUtensils,  label: 'Food'    },
-  { href: '/water',    Icon: LuDroplets,  label: 'Water'   },
-  { href: '/workout',  Icon: LuDumbbell,  label: 'Workout' },
-  { href: '/steps',    Icon: LuActivity,  label: 'Steps'   },
-  { href: '/sleep',    Icon: LuMoon,      label: 'Sleep'   },
+  { href: '/dashboard', Icon: LuHouse,     label: 'Home'      },
+  { href: '/food',      Icon: LuUtensils,  label: 'Food'      },
+  { href: '/water',     Icon: LuDroplets,  label: 'Water'     },
+  { href: '/workout',   Icon: LuDumbbell,  label: 'Workout'   },
+  { href: '/steps',     Icon: LuActivity,  label: 'Steps'     },
+  { href: '/sleep',     Icon: LuMoon,      label: 'Sleep'     },
+  { href: '/community', Icon: LuUsers,     label: 'Community' },
 ];
 
 export function BottomNav() {

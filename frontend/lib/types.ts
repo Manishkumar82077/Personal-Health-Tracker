@@ -143,6 +143,38 @@ export interface Dashboard {
   workouts: Workout[];
 }
 
+// ---- Community ----
+export interface Post {
+  id: string;
+  authorUid: string;
+  authorName: string;
+  text: string;
+  likeCount: number;
+  commentCount: number;
+  createdAt: string;
+  likedByMe?: boolean;
+}
+
+export interface Comment {
+  id: string;
+  authorUid: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface PublicProfile {
+  uid: string;
+  displayName: string;
+  joinedAt: string;
+  posts: Post[];
+}
+
+export interface Feed {
+  posts: Post[];
+  nextCursor: string | null;
+}
+
 // ---- Error envelope ----
 export interface ApiError {
   error: { code: string; message: string };
