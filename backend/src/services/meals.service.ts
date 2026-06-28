@@ -76,7 +76,9 @@ export async function deleteMeal(uid: string, id: string): Promise<void> {
 }
 
 export async function logMeal(uid: string, mealId: string, date: string): Promise<FoodEntry[]> {
-  const mealSnap = await col(uid).doc(mealId).get();
+  // Personal meals first, then the global meal catalog.
+  let mealSnap = await col(uid).doc(mealId).get();
+  if (!mealSnap.exists) mealSnap = await db.collection('mealCatalog').doc(mealId).get();
   if (!mealSnap.exists) throw new AppError(404, 'NOT_FOUND', 'Meal not found');
 
   const meal = mealSnap.data() as Meal;

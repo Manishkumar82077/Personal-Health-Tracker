@@ -7,25 +7,34 @@ import { AppError } from '../utils/AppError';
 const col = (uid: string) => db.collection('users').doc(uid).collection('foodItems');
 const foodCol = (uid: string) => db.collection('users').doc(uid).collection('foodEntries');
 const mealCol = (uid: string) => db.collection('users').doc(uid).collection('meals');
+const catalogCol = () => db.collection('foodCatalog');     // global shared items
+const mealCatalogCol = () => db.collection('mealCatalog');  // global shared meals
 
 export async function getFoodItems(uid: string, q?: string): Promise<FoodItem[]> {
-  const snap = await col(uid).get();
-  let items = snap.docs.map(d => ({ ...(d.data() as FoodItem), id: d.id }));
+  const [personalSnap, globalSnap] = await Promise.all([col(uid).get(), catalogCol().get()]);
+  let items = [
+    ...personalSnap.docs.map(d => ({ ...(d.data() as FoodItem), id: d.id })),
+    ...globalSnap.docs.map(d => ({ ...(d.data() as FoodItem), id: d.id })),
+  ];
   if (q && q.trim()) {
     const needle = q.trim().toLowerCase();
     items = items.filter(it => it.nameLower.includes(needle));
   }
-  // Most-used first, then alphabetical.
+  // Most-used first (personal favourites bubble up), then alphabetical.
   return items.sort((a, b) => (b.usageCount - a.usageCount) || a.name.localeCompare(b.name));
 }
 
 /** Combined library payload for the search UI: items + meals in one round trip. */
 export async function getLibrary(uid: string): Promise<{ items: FoodItem[]; meals: Meal[] }> {
-  const [items, mealSnap] = await Promise.all([
+  const [items, personalMeals, globalMeals] = await Promise.all([
     getFoodItems(uid),
     mealCol(uid).get(),
+    mealCatalogCol().get(),
   ]);
-  const meals = mealSnap.docs.map(d => ({ ...(d.data() as Meal), id: d.id }));
+  const meals = [
+    ...personalMeals.docs.map(d => ({ ...(d.data() as Meal), id: d.id })),
+    ...globalMeals.docs.map(d => ({ ...(d.data() as Meal), id: d.id })),
+  ];
   return { items, meals };
 }
 
@@ -83,8 +92,11 @@ export async function logFoodItem(
   date: string,
   quantity?: number
 ): Promise<FoodEntry> {
-  const ref = col(uid).doc(id);
-  const snap = await ref.get();
+  // Look in the user's personal items first, then fall back to the global catalog.
+  const personalRef = col(uid).doc(id);
+  let snap = await personalRef.get();
+  const isPersonal = snap.exists;
+  if (!snap.exists) snap = await catalogCol().doc(id).get();
   if (!snap.exists) throw new AppError(404, 'NOT_FOUND', 'Food item not found');
 
   const item = snap.data() as FoodItem;
@@ -109,7 +121,10 @@ export async function logFoodItem(
 
   const batch = db.batch();
   batch.set(entryRef, entry);
-  batch.update(ref, { usageCount: (item.usageCount ?? 0) + 1, lastUsedAt: now });
+  // Usage tracking only applies to the user's own items, not the shared catalog.
+  if (isPersonal) {
+    batch.update(personalRef, { usageCount: (item.usageCount ?? 0) + 1, lastUsedAt: now });
+  }
   await batch.commit();
 
   return entry;

@@ -56,7 +56,7 @@ export default function DashboardPage() {
 
       {error && (
         <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl p-4 text-sm">
-          <LuCircleAlert className="w-4 h-4 flex-shrink-0" />
+          <LuCircleAlert className="w-4 h-4 shrink-0" />
           Failed to load: {(error as Error).message}
         </div>
       )}
