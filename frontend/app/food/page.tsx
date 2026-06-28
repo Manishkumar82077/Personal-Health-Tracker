@@ -8,7 +8,7 @@ import {
 import { today, formatDisplay, toDateString } from '@/lib/date';
 import { deleteFood } from '@/lib/api';
 import { useFood } from '@/hooks/useFood';
-import { FoodForm } from '@/components/forms/FoodForm';
+import { AddFoodSheet } from '@/components/AddFoodSheet';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
@@ -16,7 +16,7 @@ import { PageHeader } from '@/components/PageHeader';
 
 export default function FoodPage() {
   const [date, setDate] = useState(today());
-  const [showForm, setShowForm] = useState(false);
+  const [showSheet, setShowSheet] = useState(false);
   const { entries, loading, refresh } = useFood(date);
   const isToday = date === today();
 
@@ -48,8 +48,9 @@ export default function FoodPage() {
               <LuChevronRight className="w-4 h-4" />
             </Button>
             <Link
-              href="/meals"
+              href="/library"
               className="flex items-center justify-center w-8 h-8 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title="Food library"
             >
               <LuChefHat className="w-4 h-4" />
             </Link>
@@ -57,12 +58,12 @@ export default function FoodPage() {
         }
       />
 
-      {showForm ? (
-        <FoodForm date={date} onDone={() => { refresh(); setShowForm(false); }} onCancel={() => setShowForm(false)} />
-      ) : (
-        <Button className="w-full mb-4" onClick={() => setShowForm(true)}>
-          <LuPlus className="w-4 h-4" /> Add Food Entry
-        </Button>
+      <Button className="w-full mb-4" onClick={() => setShowSheet(true)}>
+        <LuPlus className="w-4 h-4" /> Add Food
+      </Button>
+
+      {showSheet && (
+        <AddFoodSheet date={date} onClose={() => setShowSheet(false)} onLogged={refresh} />
       )}
 
       {loading && (

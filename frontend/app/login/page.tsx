@@ -9,28 +9,45 @@ import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 
 export default function LoginPage() {
-  const { user, mockMode, loading, signIn } = useAuth();
+  const { user, mockMode, loading, signIn, resetPassword } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && (user || mockMode)) router.replace('/');
+    if (!loading && (user || mockMode)) router.replace('/dashboard');
   }, [user, mockMode, loading, router]);
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setNotice('');
     setBusy(true);
     try {
       await signIn(email, password);
-      router.replace('/');
+      router.replace('/dashboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleForgot = async () => {
+    setError('');
+    setNotice('');
+    if (!email) {
+      setError('Enter your email above, then tap “Forgot password?”');
+      return;
+    }
+    try {
+      await resetPassword(email);
+      setNotice(`Password reset link sent to ${email}. Check your inbox.`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Could not send reset email');
     }
   };
 
@@ -66,10 +83,22 @@ export default function LoginPage() {
               value={email} onChange={e => setEmail(e.target.value)} required />
             <Input id="password" label="Password" type="password" placeholder="••••••••"
               value={password} onChange={e => setPassword(e.target.value)} required />
+            <div className="flex justify-end">
+              <button type="button" onClick={handleForgot}
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50 hover:underline">
+                Forgot password?
+              </button>
+            </div>
             {error && (
               <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                 <LuCircleAlert className="w-3.5 h-3.5 flex-shrink-0" />
                 {error}
+              </div>
+            )}
+            {notice && (
+              <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2.5">
+                <LuCircleAlert className="w-3.5 h-3.5 flex-shrink-0" />
+                {notice}
               </div>
             )}
             <Button type="submit" className="w-full" disabled={busy}>

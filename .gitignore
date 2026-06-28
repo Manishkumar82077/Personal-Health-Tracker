@@ -8,7 +8,7 @@
 service-account*.json
 firebase-adminsdk*.json
 credentials.json
-
+.env.example
 # ── Dependencies ─────────────────────────────────────────────────────────────
 node_modules/
 .pnp

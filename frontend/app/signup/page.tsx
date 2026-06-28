@@ -18,7 +18,7 @@ export default function SignupPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && (user || mockMode)) router.replace('/');
+    if (!loading && (user || mockMode)) router.replace('/dashboard');
   }, [user, mockMode, loading, router]);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -35,7 +35,7 @@ export default function SignupPage() {
     setBusy(true);
     try {
       await signUp(email, password);
-      router.replace('/');
+      router.replace('/dashboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign up failed');
     } finally {

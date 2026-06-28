@@ -46,8 +46,30 @@ export interface FoodEntry {
   micros?: Micros;
   date: string;          // YYYY-MM-DD
   mealId?: string;       // set if logged from a saved meal
+  foodItemId?: string;   // set if logged from a library food item
   createdAt: string;
 }
+
+// ---- Food library (reusable, searchable single items) ----
+export interface FoodItem {
+  id: string;
+  name: string;
+  caloriesPer100: number;
+  proteinPer100: number;
+  carbsPer100: number;
+  fatPer100: number;
+  fiberPer100: number;
+  defaultQuantity: number; // grams in one serving (e.g. roti = 50)
+  usageCount: number;
+  lastUsedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type FoodItemInput = Omit<
+  FoodItem,
+  'id' | 'usageCount' | 'lastUsedAt' | 'createdAt' | 'updatedAt'
+>;
 
 // ---- Meals ----
 export interface MealItem {
@@ -58,6 +80,7 @@ export interface MealItem {
   fatPer100: number;
   fiberPer100: number;
   quantity: number;      // grams of this item in the meal
+  sourceItemId?: string; // library FoodItem this was built from, if any
 }
 
 export interface Meal {

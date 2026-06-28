@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import profileRouter from './profile.routes';
 import foodRouter from './food.routes';
+import foodItemsRouter from './foodItems.routes';
 import mealsRouter from './meals.routes';
 import waterRouter from './water.routes';
 import workoutRouter from './workout.routes';
@@ -12,6 +13,7 @@ const router = Router();
 
 router.use('/profile', profileRouter);
 router.use('/food', foodRouter);
+router.use('/food-items', foodItemsRouter);
 router.use('/meals', mealsRouter);
 router.use('/water', waterRouter);
 router.use('/workouts', workoutRouter);

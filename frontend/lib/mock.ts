@@ -1,5 +1,5 @@
 import {
-  Dashboard, FoodEntry, Meal, WaterLog, Workout,
+  Dashboard, FoodEntry, FoodItem, FoodItemInput, Meal, WaterLog, Workout,
   StepsEntry, SleepEntry, Profile, Goals,
 } from './types';
 
@@ -49,6 +49,12 @@ const MOCK_SLEEP: SleepEntry = {
   date: TODAY, sleepTime: '23:00', wakeTime: '07:00',
   durationMinutes: 480, updatedAt: NOW,
 };
+
+const MOCK_FOOD_ITEMS: FoodItem[] = [
+  { id: 'fi1', name: 'Roti', caloriesPer100: 297, proteinPer100: 11, carbsPer100: 50, fatPer100: 7, fiberPer100: 5, defaultQuantity: 40, usageCount: 12, createdAt: NOW, updatedAt: NOW },
+  { id: 'fi2', name: 'Boiled Egg', caloriesPer100: 155, proteinPer100: 13, carbsPer100: 1.1, fatPer100: 11, fiberPer100: 0, defaultQuantity: 50, usageCount: 8, createdAt: NOW, updatedAt: NOW },
+  { id: 'fi3', name: 'Apple', caloriesPer100: 52, proteinPer100: 0.3, carbsPer100: 14, fatPer100: 0.2, fiberPer100: 2.4, defaultQuantity: 150, usageCount: 3, createdAt: NOW, updatedAt: NOW },
+];
 
 const MOCK_MEALS: Meal[] = [
   {
@@ -138,6 +144,52 @@ export const mockApi = {
     if (i !== -1) MOCK_FOOD.splice(i, 1);
   },
 
+  // Food library (single items)
+  getLibrary: async (): Promise<{ items: FoodItem[]; meals: Meal[] }> => ({
+    items: structuredClone(MOCK_FOOD_ITEMS).sort((a, b) => b.usageCount - a.usageCount),
+    meals: structuredClone(MOCK_MEALS),
+  }),
+  getFoodItems: async (q?: string): Promise<FoodItem[]> => {
+    let items = structuredClone(MOCK_FOOD_ITEMS);
+    if (q && q.trim()) {
+      const needle = q.trim().toLowerCase();
+      items = items.filter(it => it.name.toLowerCase().includes(needle));
+    }
+    return items.sort((a, b) => (b.usageCount - a.usageCount) || a.name.localeCompare(b.name));
+  },
+  addFoodItem: async (body: FoodItemInput): Promise<FoodItem> => {
+    const now = new Date().toISOString();
+    const item: FoodItem = { ...body, id: uid(), usageCount: 0, createdAt: now, updatedAt: now };
+    MOCK_FOOD_ITEMS.push(item);
+    return structuredClone(item);
+  },
+  updateFoodItem: async (id: string, body: Partial<FoodItemInput>): Promise<FoodItem> => {
+    const item = MOCK_FOOD_ITEMS.find(i => i.id === id);
+    if (!item) throw new Error('Food item not found');
+    Object.assign(item, body, { updatedAt: new Date().toISOString() });
+    return structuredClone(item);
+  },
+  deleteFoodItem: async (id: string): Promise<void> => {
+    const i = MOCK_FOOD_ITEMS.findIndex(it => it.id === id);
+    if (i !== -1) MOCK_FOOD_ITEMS.splice(i, 1);
+  },
+  logFoodItem: async (id: string, date: string, quantity?: number): Promise<FoodEntry> => {
+    const item = MOCK_FOOD_ITEMS.find(i => i.id === id);
+    if (!item) throw new Error('Food item not found');
+    const grams = quantity && quantity > 0 ? quantity : item.defaultQuantity;
+    const f = grams / 100;
+    const entry: FoodEntry = {
+      id: uid(), name: item.name, quantity: grams,
+      calories: item.caloriesPer100 * f, protein: item.proteinPer100 * f,
+      carbs: item.carbsPer100 * f, fat: item.fatPer100 * f, fiber: item.fiberPer100 * f,
+      date, foodItemId: id, createdAt: new Date().toISOString(),
+    };
+    MOCK_FOOD.push(entry);
+    item.usageCount += 1;
+    item.lastUsedAt = entry.createdAt;
+    return structuredClone(entry);
+  },
+
   // Meals
   getMeals: async (): Promise<Meal[]> => structuredClone(MOCK_MEALS),
   addMeal: async (body: { name: string; items: Meal['items'] }): Promise<Meal> => {
@@ -155,6 +207,28 @@ export const mockApi = {
     );
     const meal: Meal = { ...body, id: uid(), totals, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
     MOCK_MEALS.push(meal);
+    return structuredClone(meal);
+  },
+  updateMeal: async (id: string, body: { name?: string; items?: Meal['items'] }): Promise<Meal> => {
+    const meal = MOCK_MEALS.find(m => m.id === id);
+    if (!meal) throw new Error('Meal not found');
+    if (body.name !== undefined) meal.name = body.name;
+    if (body.items !== undefined) {
+      meal.items = body.items;
+      meal.totals = body.items.reduce(
+        (acc, item) => {
+          const f = item.quantity / 100;
+          acc.calories += item.caloriesPer100 * f;
+          acc.protein  += item.proteinPer100 * f;
+          acc.carbs    += item.carbsPer100 * f;
+          acc.fat      += item.fatPer100 * f;
+          acc.fiber    += item.fiberPer100 * f;
+          return acc;
+        },
+        { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+      );
+    }
+    meal.updatedAt = new Date().toISOString();
     return structuredClone(meal);
   },
   deleteMeal: async (id: string): Promise<void> => {

@@ -1,5 +1,5 @@
 import { mockApi } from './mock';
-import type { Dashboard, FoodEntry, Meal, WaterLog, Workout, StepsEntry, SleepEntry, Profile, Goals } from './types';
+import type { Dashboard, FoodEntry, FoodItem, FoodItemInput, Meal, WaterLog, Workout, StepsEntry, SleepEntry, Profile, Goals } from './types';
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
@@ -49,11 +49,27 @@ export const addFood   = (body: Omit<FoodEntry, 'id' | 'createdAt'>): Promise<Fo
 export const deleteFood = (id: string): Promise<void> =>
   USE_MOCK ? mockApi.deleteFood(id) : request(`/food/${id}`, { method: 'DELETE' });
 
+// ---- Food library (single items) ----
+export const getLibrary = (): Promise<{ items: FoodItem[]; meals: Meal[] }> =>
+  USE_MOCK ? mockApi.getLibrary() : request('/food-items/library');
+export const getFoodItems = (q?: string): Promise<FoodItem[]> =>
+  USE_MOCK ? mockApi.getFoodItems(q) : request(`/food-items${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+export const addFoodItem = (body: FoodItemInput): Promise<FoodItem> =>
+  USE_MOCK ? mockApi.addFoodItem(body) : request('/food-items', { method: 'POST', body: JSON.stringify(body) });
+export const updateFoodItem = (id: string, body: Partial<FoodItemInput>): Promise<FoodItem> =>
+  USE_MOCK ? mockApi.updateFoodItem(id, body) : request(`/food-items/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+export const deleteFoodItem = (id: string): Promise<void> =>
+  USE_MOCK ? mockApi.deleteFoodItem(id) : request(`/food-items/${id}`, { method: 'DELETE' });
+export const logFoodItem = (id: string, date: string, quantity?: number): Promise<FoodEntry> =>
+  USE_MOCK ? mockApi.logFoodItem(id, date, quantity) : request(`/food-items/${id}/log`, { method: 'POST', body: JSON.stringify({ date, quantity }) });
+
 // ---- Meals ----
 export const getMeals   = (): Promise<Meal[]> =>
   USE_MOCK ? mockApi.getMeals() : request('/meals');
 export const addMeal    = (body: { name: string; items: Meal['items'] }): Promise<Meal> =>
   USE_MOCK ? mockApi.addMeal(body) : request('/meals', { method: 'POST', body: JSON.stringify(body) });
+export const updateMeal = (id: string, body: { name?: string; items?: Meal['items'] }): Promise<Meal> =>
+  USE_MOCK ? mockApi.updateMeal(id, body) : request(`/meals/${id}`, { method: 'PUT', body: JSON.stringify(body) });
 export const deleteMeal = (id: string): Promise<void> =>
   USE_MOCK ? mockApi.deleteMeal(id) : request(`/meals/${id}`, { method: 'DELETE' });
 export const logMeal    = (id: string, date: string): Promise<{ entries: FoodEntry[] }> =>

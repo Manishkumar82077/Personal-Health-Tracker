@@ -5,6 +5,8 @@ import {
   signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   GoogleAuthProvider, signInWithPopup,
+  sendPasswordResetEmail, updatePassword,
+  reauthenticateWithCredential, EmailAuthProvider,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { setTokenProvider } from '@/lib/api';
@@ -19,6 +21,8 @@ interface AuthContextValue {
   signUp: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   getToken: () => Promise<string | null>;
 }
 
@@ -67,8 +71,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const resetPassword = async (email: string) => {
+    if (USE_MOCK) return;
+    await sendPasswordResetEmail(auth, email);
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (USE_MOCK) return;
+    const current = auth.currentUser;
+    if (!current || !current.email) throw new Error('You must be signed in to change your password.');
+    // Re-authenticate first — Firebase requires a recent login to update a password.
+    const credential = EmailAuthProvider.credential(current.email, currentPassword);
+    await reauthenticateWithCredential(current, credential);
+    await updatePassword(current, newPassword);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, mockMode: USE_MOCK, loading, signIn, signUp, signInWithGoogle, signOut, getToken }}>
+    <AuthContext.Provider value={{ user, mockMode: USE_MOCK, loading, signIn, signUp, signInWithGoogle, signOut, resetPassword, changePassword, getToken }}>
       {children}
     </AuthContext.Provider>
   );

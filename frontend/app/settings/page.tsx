@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { LuCheck, LuTarget, LuScale, LuUser, LuLogOut } from 'react-icons/lu';
+import { LuCheck, LuTarget, LuScale, LuUser, LuLogOut, LuLock, LuPalette, LuMonitor, LuSun, LuMoon } from 'react-icons/lu';
 import { updateProfile } from '@/lib/api';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme, type Theme } from '@/components/ThemeProvider';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -15,7 +16,33 @@ type FormState = Omit<Goals, never> & { weightKg: string; displayName: string };
 
 export default function SettingsPage() {
   const { profile, loading, refresh } = useProfile();
-  const { signOut } = useAuth();
+  const { signOut, changePassword, mockMode } = useAuth();
+  const { theme, setTheme } = useTheme();
+
+  // Change-password card state
+  const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
+  const [pwBusy, setPwBusy] = useState(false);
+  const [pwSaved, setPwSaved] = useState(false);
+  const [pwErr, setPwErr] = useState('');
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwErr('');
+    setPwSaved(false);
+    if (pw.next !== pw.confirm) { setPwErr('New passwords do not match'); return; }
+    if (pw.next.length < 6) { setPwErr('Password must be at least 6 characters'); return; }
+    setPwBusy(true);
+    try {
+      await changePassword(pw.current, pw.next);
+      setPw({ current: '', next: '', confirm: '' });
+      setPwSaved(true);
+      setTimeout(() => setPwSaved(false), 2500);
+    } catch (e: unknown) {
+      setPwErr(e instanceof Error ? e.message : 'Failed to change password');
+    } finally {
+      setPwBusy(false);
+    }
+  };
 
   const [form, setForm] = useState<FormState>({
     calorieGoal: 2000, proteinGoal: 120, carbsGoal: 250,
@@ -78,7 +105,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="max-w-lg mx-auto px-4 py-6">
-        <PageHeader title="Settings" backHref="/" />
+        <PageHeader title="Settings" backHref="/dashboard" />
         <div className="flex justify-center py-20"><Spinner size="lg" /></div>
       </div>
     );
@@ -86,7 +113,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
-      <PageHeader title="Settings" subtitle="Goals & profile" backHref="/" />
+      <PageHeader title="Settings" subtitle="Goals & profile" backHref="/dashboard" />
 
       <form onSubmit={handleSave} className="space-y-4">
         {/* Profile */}
@@ -152,6 +179,61 @@ export default function SettingsPage() {
           {busy ? 'Saving…' : saved ? 'Saved!' : 'Save Changes'}
         </Button>
       </form>
+
+      {/* Appearance */}
+      <Card className="p-4 mt-4">
+        <div className="flex items-center gap-1.5 mb-4">
+          <LuPalette className="w-4 h-4 text-gray-400" />
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Appearance</p>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {([
+            { value: 'light',  label: 'Light',  Icon: LuSun },
+            { value: 'dark',   label: 'Dark',   Icon: LuMoon },
+            { value: 'system', label: 'System', Icon: LuMonitor },
+          ] as { value: Theme; label: string; Icon: typeof LuSun }[]).map(({ value, label, Icon }) => {
+            const active = theme === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setTheme(value)}
+                className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border py-3 text-xs font-medium transition-colors ${
+                  active
+                    ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-50 bg-gray-50 dark:bg-gray-800'
+                    : 'border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Change password */}
+      {!mockMode && (
+        <Card className="p-4 mt-4">
+          <div className="flex items-center gap-1.5 mb-4">
+            <LuLock className="w-4 h-4 text-gray-400" />
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Change Password</p>
+          </div>
+          <form onSubmit={handleChangePassword} className="space-y-3">
+            <Input label="Current password" type="password" placeholder="••••••••"
+              value={pw.current} onChange={e => setPw(p => ({ ...p, current: e.target.value }))} required />
+            <Input label="New password" type="password" placeholder="Min. 6 characters"
+              value={pw.next} onChange={e => setPw(p => ({ ...p, next: e.target.value }))} required />
+            <Input label="Confirm new password" type="password" placeholder="••••••••"
+              value={pw.confirm} onChange={e => setPw(p => ({ ...p, confirm: e.target.value }))} required />
+            {pwErr && <p className="text-xs text-gray-500 px-1">{pwErr}</p>}
+            <Button type="submit" variant="secondary" className="w-full" disabled={pwBusy}>
+              {pwBusy ? <Spinner size="sm" /> : pwSaved ? <LuCheck className="w-4 h-4" /> : null}
+              {pwBusy ? 'Updating…' : pwSaved ? 'Password updated!' : 'Update Password'}
+            </Button>
+          </form>
+        </Card>
+      )}
 
       <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
         <Button variant="ghost" className="w-full text-gray-400" onClick={() => signOut()}>

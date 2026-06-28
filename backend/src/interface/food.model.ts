@@ -20,6 +20,7 @@ export interface FoodEntry {
   fiber: number;
   micros?: Micros;
   date: string;
-  mealId?: string;
+  mealId?: string;       // set if logged from a saved meal
+  foodItemId?: string;   // set if logged from a library food item
   createdAt: string;
 }

@@ -8,6 +8,7 @@ export interface MealItem {
   fatPer100: number;
   fiberPer100: number;
   quantity: number;
+  sourceItemId?: string;  // library FoodItem this was built from, if any
 }
 
 export interface Meal {

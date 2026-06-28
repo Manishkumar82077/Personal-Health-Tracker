@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { LuHouse, LuUtensils, LuDroplets, LuDumbbell, LuActivity, LuMoon } from 'react-icons/lu';
 
 const NAV = [
-  { href: '/',         Icon: LuHouse,     label: 'Home'    },
+  { href: '/dashboard', Icon: LuHouse,    label: 'Home'    },
   { href: '/food',     Icon: LuUtensils,  label: 'Food'    },
   { href: '/water',    Icon: LuDroplets,  label: 'Water'   },
   { href: '/workout',  Icon: LuDumbbell,  label: 'Workout' },
@@ -14,7 +14,7 @@ const NAV = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  if (pathname === '/login') return null;
+  if (pathname === '/' || pathname === '/login' || pathname === '/signup') return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
