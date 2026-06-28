@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import * as mealsService from '../../services/meals.service';
 
-export const getMeals = async (req: Request, res: Response, next: NextFunction) => {
+export const getMeals = async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    res.json(await mealsService.getMeals(req.uid));
+    res.json(await mealsService.getMeals());
   } catch (err) {
     next(err);
   }
@@ -16,7 +16,7 @@ export const createMeal = async (req: Request, res: Response, next: NextFunction
     return;
   }
   try {
-    res.status(201).json(await mealsService.createMeal(req.uid, { name, items }));
+    res.status(201).json(await mealsService.createMeal({ name, items }));
   } catch (err) {
     next(err);
   }
@@ -24,7 +24,7 @@ export const createMeal = async (req: Request, res: Response, next: NextFunction
 
 export const updateMeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.json(await mealsService.updateMeal(req.uid, req.params.id as string, req.body));
+    res.json(await mealsService.updateMeal(req.params.id as string, req.body));
   } catch (err) {
     next(err);
   }
@@ -32,7 +32,7 @@ export const updateMeal = async (req: Request, res: Response, next: NextFunction
 
 export const deleteMeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await mealsService.deleteMeal(req.uid, req.params.id as string);
+    await mealsService.deleteMeal(req.params.id as string);
     res.status(204).send();
   } catch (err) {
     next(err);

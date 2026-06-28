@@ -3,7 +3,9 @@ import { Meal, MealItem } from '../interface/meal.model';
 import { FoodEntry, MacroTotals } from '../interface/food.model';
 import { AppError } from '../utils/AppError';
 
-const col = (uid: string) => db.collection('users').doc(uid).collection('meals');
+// Global shared meal library.
+const col = () => db.collection('mealList');
+// Daily food log stays per-user.
 const foodCol = (uid: string) => db.collection('users').doc(uid).collection('foodEntries');
 
 function computeTotals(items: MealItem[]): MacroTotals {
@@ -22,17 +24,21 @@ function computeTotals(items: MealItem[]): MacroTotals {
   );
 }
 
-export async function getMeals(uid: string): Promise<Meal[]> {
-  const snap = await col(uid).get();
+export async function getMeals(): Promise<Meal[]> {
+  const snap = await col().get();
   return snap.docs.map(d => ({ ...(d.data() as Meal), id: d.id }));
 }
 
-export async function createMeal(
-  uid: string,
-  data: { name: string; items: MealItem[] }
-): Promise<Meal> {
+export async function createMeal(data: { name: string; items: MealItem[] }): Promise<Meal> {
+  // Avoid duplicates — if a meal with the same name already exists, reuse it.
+  const existing = await col().where('name', '==', data.name).limit(1).get();
+  if (!existing.empty) {
+    const doc = existing.docs[0];
+    return { ...(doc.data() as Meal), id: doc.id };
+  }
+
   const now = new Date().toISOString();
-  const ref = col(uid).doc();
+  const ref = col().doc();
   const meal: Meal = {
     id: ref.id,
     name: data.name,
@@ -46,11 +52,10 @@ export async function createMeal(
 }
 
 export async function updateMeal(
-  uid: string,
   id: string,
   data: { name?: string; items?: MealItem[] }
 ): Promise<Meal> {
-  const ref = col(uid).doc(id);
+  const ref = col().doc(id);
   const snap = await ref.get();
   if (!snap.exists) throw new AppError(404, 'NOT_FOUND', 'Meal not found');
 
@@ -68,17 +73,16 @@ export async function updateMeal(
   return { ...current, ...patch, id };
 }
 
-export async function deleteMeal(uid: string, id: string): Promise<void> {
-  const ref = col(uid).doc(id);
+export async function deleteMeal(id: string): Promise<void> {
+  const ref = col().doc(id);
   const snap = await ref.get();
   if (!snap.exists) throw new AppError(404, 'NOT_FOUND', 'Meal not found');
   await ref.delete();
 }
 
+/** Log a shared meal to a user's day, expanding its items into FoodEntries. */
 export async function logMeal(uid: string, mealId: string, date: string): Promise<FoodEntry[]> {
-  // Personal meals first, then the global meal catalog.
-  let mealSnap = await col(uid).doc(mealId).get();
-  if (!mealSnap.exists) mealSnap = await db.collection('mealCatalog').doc(mealId).get();
+  const mealSnap = await col().doc(mealId).get();
   if (!mealSnap.exists) throw new AppError(404, 'NOT_FOUND', 'Meal not found');
 
   const meal = mealSnap.data() as Meal;

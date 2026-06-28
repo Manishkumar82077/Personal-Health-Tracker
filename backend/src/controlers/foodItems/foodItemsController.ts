@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import * as foodItemsService from '../../services/foodItems.service';
 
-export const getLibrary = async (req: Request, res: Response, next: NextFunction) => {
+export const getLibrary = async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    res.json(await foodItemsService.getLibrary(req.uid));
+    res.json(await foodItemsService.getLibrary());
   } catch (err) {
     next(err);
   }
@@ -12,7 +12,7 @@ export const getLibrary = async (req: Request, res: Response, next: NextFunction
 export const getFoodItems = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const q = typeof req.query.q === 'string' ? req.query.q : undefined;
-    res.json(await foodItemsService.getFoodItems(req.uid, q));
+    res.json(await foodItemsService.getFoodItems(q));
   } catch (err) {
     next(err);
   }
@@ -34,7 +34,7 @@ export const createFoodItem = async (req: Request, res: Response, next: NextFunc
       fiberPer100: Number(req.body.fiberPer100) || 0,
       defaultQuantity: Number(req.body.defaultQuantity) || 100,
     };
-    res.status(201).json(await foodItemsService.createFoodItem(req.uid, body));
+    res.status(201).json(await foodItemsService.createFoodItem(body));
   } catch (err) {
     next(err);
   }
@@ -42,7 +42,7 @@ export const createFoodItem = async (req: Request, res: Response, next: NextFunc
 
 export const updateFoodItem = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.json(await foodItemsService.updateFoodItem(req.uid, req.params.id as string, req.body));
+    res.json(await foodItemsService.updateFoodItem(req.params.id as string, req.body));
   } catch (err) {
     next(err);
   }
@@ -50,7 +50,7 @@ export const updateFoodItem = async (req: Request, res: Response, next: NextFunc
 
 export const deleteFoodItem = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await foodItemsService.deleteFoodItem(req.uid, req.params.id as string);
+    await foodItemsService.deleteFoodItem(req.params.id as string);
     res.status(204).send();
   } catch (err) {
     next(err);

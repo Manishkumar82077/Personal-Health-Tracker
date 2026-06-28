@@ -1,8 +1,8 @@
 /**
- * Seeds the global food catalog into Firestore.
+ * Seeds the global shared catalog into Firestore.
  *
- *   foodCatalog/{slug}  — reusable single items everyone can search
- *   mealCatalog/{slug}  — ready-made meals built from those items
+ *   itemList/{slug}  — reusable single items everyone can search
+ *   mealList/{slug}  — ready-made meals built from those items
  *
  * Run:  npm run seed   (from the backend folder)
  */
@@ -87,7 +87,7 @@ async function main() {
       createdAt: now,
       updatedAt: now,
     };
-    itemWrites.push({ ref: db.collection('foodCatalog').doc(id), data: doc });
+    itemWrites.push({ ref: db.collection('itemList').doc(id), data: doc });
   }
 
   const mealWrites: { ref: FirebaseFirestore.DocumentReference; data: object }[] = [];
@@ -123,7 +123,7 @@ async function main() {
       createdAt: now,
       updatedAt: now,
     };
-    mealWrites.push({ ref: db.collection('mealCatalog').doc(id), data: doc });
+    mealWrites.push({ ref: db.collection('mealList').doc(id), data: doc });
   }
 
   await commitInChunks(itemWrites);
