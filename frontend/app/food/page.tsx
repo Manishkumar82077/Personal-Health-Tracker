@@ -105,7 +105,7 @@ export default function FoodPage() {
                 </div>
                 <button
                   onClick={() => handleDelete(entry.id)}
-                  className="text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400 transition-colors flex-shrink-0 mt-0.5"
+                  className="text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400 transition-colors shrink-0 mt-0.5"
                 >
                   <LuTrash2 className="w-4 h-4" />
                 </button>

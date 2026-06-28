@@ -73,7 +73,7 @@ export default function LoginPage() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 space-y-4">
           {mockMode && (
             <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs rounded-xl px-3 py-2.5">
-              <LuCircleAlert className="w-3.5 h-3.5 flex-shrink-0" />
+              <LuCircleAlert className="w-3.5 h-3.5 shrink-0" />
               Mock mode — no real credentials needed
             </div>
           )}
@@ -91,13 +91,13 @@ export default function LoginPage() {
             </div>
             {error && (
               <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-                <LuCircleAlert className="w-3.5 h-3.5 flex-shrink-0" />
+                <LuCircleAlert className="w-3.5 h-3.5 shrink-0" />
                 {error}
               </div>
             )}
             {notice && (
               <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2.5">
-                <LuCircleAlert className="w-3.5 h-3.5 flex-shrink-0" />
+                <LuCircleAlert className="w-3.5 h-3.5 shrink-0" />
                 {notice}
               </div>
             )}

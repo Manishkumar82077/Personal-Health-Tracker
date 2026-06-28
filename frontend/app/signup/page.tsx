@@ -73,7 +73,7 @@ export default function SignupPage() {
 
             {error && (
               <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-                <LuCircleAlert className="w-3.5 h-3.5 flex-shrink-0" />
+                <LuCircleAlert className="w-3.5 h-3.5 shrink-0" />
                 {error}
               </div>
             )}

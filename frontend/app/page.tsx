@@ -151,7 +151,7 @@ export default function LandingPage() {
             <ul className="mt-4 space-y-2">
               {['Pick any date and see that day’s totals', 'Progress bars vs. your personal goals', 'Macros, hydration, activity & rest in one view'].map(t => (
                 <li key={t} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
-                  <LuCheck className="w-4 h-4 mt-0.5 text-emerald-500 flex-shrink-0" /> {t}
+                  <LuCheck className="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" /> {t}
                 </li>
               ))}
             </ul>
@@ -207,7 +207,7 @@ export default function LandingPage() {
             <ul className="mt-4 space-y-2">
               {['200+ ready-to-log foods & meals', 'Build meals from multiple items', 'Log to any day with one tap'].map(t => (
                 <li key={t} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
-                  <LuCheck className="w-4 h-4 mt-0.5 text-emerald-500 flex-shrink-0" /> {t}
+                  <LuCheck className="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" /> {t}
                 </li>
               ))}
             </ul>
@@ -229,7 +229,7 @@ export default function LandingPage() {
             <ul className="mt-4 space-y-2">
               {['Live-feeling chat feed', 'Emoji reactions & threaded replies', 'Public profiles — your posts, never your private data'].map(t => (
                 <li key={t} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
-                  <LuCheck className="w-4 h-4 mt-0.5 text-emerald-500 flex-shrink-0" /> {t}
+                  <LuCheck className="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" /> {t}
                 </li>
               ))}
             </ul>
