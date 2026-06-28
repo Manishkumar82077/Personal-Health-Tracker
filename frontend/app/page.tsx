@@ -49,11 +49,11 @@ export default function LandingPage() {
               <>
                 <Link href="/login"
                   className="text-sm font-medium px-3.5 py-1.5 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                  Sign in
+                  Login
                 </Link>
                 <Link href="/signup"
                   className="text-sm font-medium px-3.5 py-1.5 rounded-xl bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:opacity-90 transition-opacity">
-                  Get started
+                  Sign Up
                 </Link>
               </>
             )}
