@@ -16,7 +16,7 @@ export function PageHeader({ title, subtitle, backHref, action }: PageHeaderProp
         {backHref && (
           <Link
             href={backHref}
-            className="flex items-center justify-center w-8 h-8 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
+            className="flex items-center justify-center w-8 h-8 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
           >
             <LuChevronLeft className="w-5 h-5" />
           </Link>
@@ -28,7 +28,7 @@ export function PageHeader({ title, subtitle, backHref, action }: PageHeaderProp
           )}
         </div>
       </div>
-      {action && <div className="flex-shrink-0 ml-3">{action}</div>}
+      {action && <div className="shrink-0 ml-3">{action}</div>}
     </div>
   );
 }
