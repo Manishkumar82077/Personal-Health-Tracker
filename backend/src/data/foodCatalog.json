@@ -196,7 +196,10 @@
     { "name": "Moong sprouts", "caloriesPer100": 30, "proteinPer100": 3, "carbsPer100": 6, "fatPer100": 0.2, "fiberPer100": 1.8, "defaultQuantity": 100 },
     { "name": "Granola", "caloriesPer100": 471, "proteinPer100": 10, "carbsPer100": 64, "fatPer100": 20, "fiberPer100": 7, "defaultQuantity": 40 },
     { "name": "Whey protein powder", "caloriesPer100": 400, "proteinPer100": 80, "carbsPer100": 8, "fatPer100": 6, "fiberPer100": 0, "defaultQuantity": 30 },
-    { "name": "Mixed vegetable salad", "caloriesPer100": 35, "proteinPer100": 1.5, "carbsPer100": 6, "fatPer100": 0.5, "fiberPer100": 2, "defaultQuantity": 150 }
+    { "name": "Mixed vegetable salad", "caloriesPer100": 35, "proteinPer100": 1.5, "carbsPer100": 6, "fatPer100": 0.5, "fiberPer100": 2, "defaultQuantity": 150 },
+    { "name": "Soya chunks (cooked)", "caloriesPer100": 145, "proteinPer100": 18, "carbsPer100": 8, "fatPer100": 0.5, "fiberPer100": 4, "defaultQuantity": 50 },
+    { "name": "Makhana (fox nuts)", "caloriesPer100": 347, "proteinPer100": 9.7, "carbsPer100": 77, "fatPer100": 0.1, "fiberPer100": 14.5, "defaultQuantity": 20 },
+    { "name": "Dragon fruit", "caloriesPer100": 60, "proteinPer100": 1.2, "carbsPer100": 13, "fatPer100": 0, "fiberPer100": 3, "defaultQuantity": 100 }
   ],
   "meals": [
     { "name": "Rice + Dal", "components": [ { "item": "White rice (cooked)", "quantity": 200 }, { "item": "Toor dal (cooked)", "quantity": 150 } ] },
